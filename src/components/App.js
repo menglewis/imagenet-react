@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 
-import ndarray from 'ndarray';
-import ops from 'ndarray-ops';
-
+import 'bootstrap/dist/css/bootstrap.css';
 import '../App.css';
+
 import ModelLoader from '../components/ModelLoader';
+import ModelRunner from '../components/ModelRunner';
+import ModelOutputs from '../components/ModelOutputs';
 import ImageLoader from '../components/ImageLoader';
+import LoadingOverlay from '../components/LoadingOverlay';
 import { imagenetClassesTopK } from '../utils';
 
 class App extends Component {
@@ -73,38 +75,19 @@ class App extends Component {
       model: model
     });
   };
-
-  runModel = () => {
-    const imageData = this.state.imageData;
-    const { data, width, height } = imageData;
-    let dataTensor = ndarray(new Float32Array(data), [ width, height, 4]);
-    let dataProcessedTensor = ndarray(new Float32Array(width * height * 3), [
-      width,
-      height,
-      3
-    ]);
-    ops.subseq(dataTensor.pick(null, null, 2), 103.939);
-    ops.subseq(dataTensor.pick(null, null, 1), 116.779);
-    ops.subseq(dataTensor.pick(null, null, 0), 123.68);
-    ops.assign(
-      dataProcessedTensor.pick(null, null, 0),
-      dataTensor.pick(null, null, 2)
-    );
-    ops.assign(
-      dataProcessedTensor.pick(null, null, 1),
-      dataTensor.pick(null, null, 1)
-    );
-    ops.assign(
-      dataProcessedTensor.pick(null, null, 2),
-      dataTensor.pick(null, null, 0)
-    );
-    const inputData = { input_1: dataProcessedTensor.data };
-    this.state.model.predict(inputData).then(outputData => {
-      this.setState({
-        output: outputData['fc1000'],
-        topOutput: imagenetClassesTopK(outputData['fc1000'], 5)
-      });
-    });
+  
+  updateModelRunning = (value) => {
+    this.setState({
+      modelRunning: value
+    })
+  };
+  
+  setModelOutputs = (outputData) => {
+    this.setState({
+      modelRunning: false,
+      output: outputData['fc1000'],
+      topOutput: imagenetClassesTopK(outputData['fc1000'], 5) 
+    })
   };
 
   updateUrl = (value) => {
@@ -125,31 +108,44 @@ class App extends Component {
     })
   };
 
-  renderOutput = (output) => {
+  renderModelForm = () => {
     return (
-      <li>{output.name} {output.probability}</li>
+      <div className="row">
+        <div className="col-md-6">
+          <ImageLoader imageUrl={this.state.imageUrl}
+                       updateUrl={this.updateUrl}
+                       updateImageLoaded={this.updateImageLoaded}
+                       updateImageData={this.updateImageData}
+          />
+          <ModelRunner imageData={this.state.imageData}
+                       model={this.state.model}
+                       setModelOutputs={this.setModelOutputs}
+                       updateModelRunning={this.updateModelRunning}
+          />
+        </div>
+        <div className="col-md-6">
+          {this.state.output && <ModelOutputs outputs={this.state.topOutput} />}
+        </div>
+      </div>
     )
-  };
+  }
 
   render() {
     return (
-      <div className="App">
-        <div className="App-header">
-          <h2>Imagenet</h2>
-        </div>
-        <ModelLoader loadFunction={this.loadModel}
-                   loadingPercent={this.state.loadingPercent}
-                   modelLoaded={this.state.modelLoaded}
-        />
-        <ImageLoader imageUrl={this.state.imageUrl}
-                     updateUrl={this.updateUrl}
-                     updateImageLoaded={this.updateImageLoaded}
-                     updateImageData={this.updateImageData}
-        />
-        <button onClick={this.runModel} disabled={!this.state.imageLoaded}>Run Model</button>
-        <ul>
-          {this.state.topOutput.map(this.renderOutput)}
-        </ul>
+      <div className="container">
+        {
+          !this.state.modelLoaded &&
+          <ModelLoader loadFunction={this.loadModel}
+                       loadingPercent={this.state.loadingPercent}
+                       modelLoaded={this.state.modelLoaded}
+          />
+        }
+        {
+          this.state.modelLoaded && this.renderModelForm()
+        }
+        {
+          (this.state.modelLoading || this.state.modelRunning) && <LoadingOverlay />
+        }
       </div>
     );
   }

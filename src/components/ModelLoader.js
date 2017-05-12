@@ -7,8 +7,10 @@ const ModelLoader = (props) => {
   }
   return (
     <div>
-      <button onClick={props.loadFunction}>Load Model</button>
-      <p>{props.loadingPercent}</p>
+      <button className="btn btn-default"
+              onClick={props.loadFunction}>
+        Load Model (~100MB)
+      </button>
     </div>
   )
 }
