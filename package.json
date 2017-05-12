@@ -6,6 +6,7 @@
     "react-scripts": "0.8.5"
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "lodash": "^4.17.4",
     "ndarray": "^1.0.18",
     "ndarray-ops": "^1.2.2",
