@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 import numpy as np
 import h5py
@@ -69,8 +70,12 @@ class Encoder(object):
 
 
 if __name__ == "__main__":
-    WEIGHT_PATH = '../public/resnet50.hdf5'
-    MODEL_PATH = '../public/resnet50.json'
+    if len(sys.argv) > 1:
+        output_dir = sys.argv[1]
+    else:
+        output_dir = '../public'
+    WEIGHT_PATH = os.path.join(output_dir, 'resnet50.hdf5')
+    MODEL_PATH = os.path.join(output_dir, 'resnet50.json')
 
     model = resnet50.ResNet50(include_top=True, weights='imagenet')
     model.save_weights(WEIGHT_PATH)
