@@ -44,9 +44,12 @@ class ImageLoader extends React.Component {
         <div>
           <div>Enter a valid image URL or upload an image:</div>
           <input type="text" name="imageUrl" placeholder="Image URL" value={this.props.imageUrl} onChange={(e) => this.props.updateUrl(e.target.value)} />
-          <button onClick={() => this.loadImage(this.props.imageUrl)}>Load Image</button>
+          <button className="btn btn-default" onClick={() => this.loadImage(this.props.imageUrl)}>Load Image</button>
           <span> or </span>
-          <input type="file" name="file" ref="file" onChange={() => this.loadImage()} />
+          <label className="btn btn-default btn-file">
+            Upload Image <input type="file" name="file" ref="file" hidden accept="image/*" onChange={() => this.loadImage()} />
+          </label>
+
         </div>
         <div>
           <canvas ref="canvas" width={224} height={224} />
